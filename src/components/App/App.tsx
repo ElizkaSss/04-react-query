@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Toaster, toast } from "react-hot-toast";
+
 import SearchBar from "../SearchBar/SearchBar";
-import { fetchMovies } from "../../services/movieService";
-import type { Movie, MoviesResponse } from "../../types/movie";
 import MovieGrid from "../MovieGrid/MovieGrid";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import MovieModal from "../MovieModal/MovieModal";
+
 import ReactPaginate from "react-paginate";
 import css from "./App.module.css";
+
+import { fetchMovies, type MoviesResponse } from "../../services/movieService";
+import type { Movie } from "../../types/movie";
+
 
 export default function App() {
   const [query, setQuery] = useState("");
@@ -28,9 +32,11 @@ export default function App() {
     setPage(1);
   };
 
-  if (!isLoading && !isError && data && data.results.length === 0) {
-    toast.error("No movies found for your request.");
-  }
+   useEffect(() => {
+    if (!isLoading && !isError && data?.results?.length === 0 && query.trim()) {
+      toast.error("No movies found for your request.");
+    }
+  }, [isLoading, isError, data, query]);
 
   return (
     <>
@@ -47,7 +53,7 @@ export default function App() {
         <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
       )}
 
-      {data && data.total_pages > 1 && (
+      {data?.total_pages && data.total_pages > 1 && (
         <ReactPaginate
           pageCount={data.total_pages}
           pageRangeDisplayed={5}
